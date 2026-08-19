@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workztream — Technician-grade Windows maintenance, one clean toolkit</title>
+<meta name="description" content="Workztream consolidates SFC, DISM, Chkdsk, network resets, bloatware removal, and more of Windows' own repair tools into one clean, admin-grade GUI. Free. No ads. No telemetry.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0B0714;
+    --panel:#120B1F;
+    --chip:#170D28;
+    --border:#241238;
+    --border-soft:#2A1846;
+    --text:#EDE4FF;
+    --muted:#9284C4;
+    --dim:#5C5480;
+    --cyan:#59C7FF;
+    --violet:#8B7CF6;
+    --magenta:#D96BD0;
+    --warn:#F5C860;
+    --danger:#FF6B6B;
+    --grad: linear-gradient(90deg, var(--cyan), var(--violet), var(--magenta));
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--void);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+
+  h1,h2,h3,.display{ font-family:'Space Grotesk', sans-serif; letter-spacing:-0.02em; margin:0; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  a{ color:inherit; }
+  .grad-text{
+    background:var(--grad);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+  section{ position:relative; }
+
+  ::selection{ background:var(--violet); color:#0B0714; }
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--cyan);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  /* ---------- ambient node/packet texture (borrowed from the app splash) ---------- */
+  .node-field{
+    position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0;
+  }
+  .node-field svg{ position:absolute; opacity:0.35; }
+  .node-field .f1{ top:-60px; right:-80px; width:420px; }
+  .node-field .f2{ bottom:-100px; left:-100px; width:360px; opacity:0.22; }
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,7,20,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px;
+    max-width:1180px; margin:0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
+  .brand-mark{
+    width:30px; height:30px; border-radius:8px;
+    object-fit:contain; display:block;
+  }
+  .brand-word{ font-family:'Space Grotesk'; font-weight:700; font-size:16px; letter-spacing:0.02em; }
+  nav.links{ display:flex; align-items:center; gap:30px; }
+  nav.links a{
+    text-decoration:none; color:var(--muted); font-size:14px; font-weight:500;
+    transition:color 0.15s;
+  }
+  nav.links a:hover{ color:var(--text); }
+  .nav-cta{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--text); color:#0B0714 !important;
+    padding:9px 18px; border-radius:6px;
+    font-size:14px; font-weight:600; text-decoration:none;
+    transition:transform 0.15s, box-shadow 0.15s;
+  }
+  .nav-cta:hover{ transform:translateY(-1px); box-shadow:0 8px 24px rgba(139,124,246,0.35); }
+  .menu-btn{ display:none; background:none; border:1px solid var(--border-soft); color:var(--text); border-radius:6px; padding:8px 10px; cursor:pointer; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:88px 0 96px; overflow:hidden; }
+  .hero-grid{
+    display:grid; grid-template-columns:1.05fr 0.95fr; gap:64px; align-items:center;
+    position:relative; z-index:1;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono'; font-size:12px; color:var(--cyan);
+    background:rgba(89,199,255,0.08); border:1px solid rgba(89,199,255,0.25);
+    padding:6px 12px; border-radius:20px; margin-bottom:22px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+  .hero h1{ font-size:52px; line-height:1.06; font-weight:700; }
+  .hero h1 span.line{ display:block; }
+  .hero p.lede{
+    margin-top:22px; font-size:17px; color:var(--muted); max-width:520px;
+  }
+  .hero-actions{ display:flex; gap:14px; margin-top:34px; flex-wrap:wrap; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:13px 22px; border-radius:7px; font-size:14.5px; font-weight:600;
+    text-decoration:none; cursor:pointer; border:1px solid transparent;
+    transition:transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+  .btn-primary{ background:var(--grad); color:#0B0714; }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 10px 30px rgba(217,107,208,0.28); }
+  .btn-ghost{ background:transparent; color:var(--text); border-color:var(--border-soft); }
+  .btn-ghost:hover{ border-color:var(--violet); color:var(--violet); }
+  .hero-fineprint{
+    margin-top:22px; display:flex; gap:22px; flex-wrap:wrap;
+    font-family:'JetBrains Mono'; font-size:12px; color:var(--dim);
+  }
+  .hero-fineprint span{ display:flex; align-items:center; gap:7px; }
+  .hero-fineprint span::before{ content:'—'; color:var(--border-soft); }
+
+  /* ---------- terminal ---------- */
+  .terminal{
+    background:#08050F; border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 30px 80px -20px rgba(139,124,246,0.25), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    overflow:hidden;
+  }
+  .terminal-bar{
+    display:flex; align-items:center; gap:8px;
+    padding:12px 16px; border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, #120B1F, #0D0817);
+  }
+  .terminal-bar .dot{ width:10px; height:10px; border-radius:50%; }
+  .terminal-bar .dot:nth-child(1){ background:#FF6B6B; }
+  .terminal-bar .dot:nth-child(2){ background:#F5C860; }
+  .terminal-bar .dot:nth-child(3){ background:#59C7FF; }
+  .terminal-title{
+    margin-left:8px; font-family:'JetBrains Mono'; font-size:11.5px; color:var(--dim); font-weight:500;
+    letter-spacing:0.04em;
+  }
+  .terminal-body{
+    padding:20px 18px; height:340px; overflow:hidden;
+    font-family:'JetBrains Mono'; font-size:13px; line-height:1.85;
+  }
+  .terminal-line{ white-space:pre-wrap; opacity:0; animation:fadein 0.25s forwards; }
+  .tag-ok{ color:var(--cyan); }
+  .tag-warn{ color:var(--warn); }
+  .tag-info{ color:var(--muted); }
+  .ts{ color:var(--dim); }
+  @keyframes fadein{ to{ opacity:1; } }
+  .cursor{
+    display:inline-block; width:7px; height:14px; background:var(--cyan);
+    margin-left:2px; animation:blink 1s steps(1) infinite; vertical-align:-2px;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* ---------- stats bar ---------- */
+  .statbar{
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    background:var(--panel);
+  }
+  .statbar .wrap{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    padding:26px 28px;
+  }
+  .stat{ text-align:center; padding:0 10px; }
+  .stat b{ display:block; font-family:'Space Grotesk'; font-size:24px; font-weight:700; }
+  .stat span{ display:block; margin-top:4px; font-size:12.5px; color:var(--dim); font-family:'JetBrains Mono'; }
+
+  /* ---------- section heads ---------- */
+  .section-head{ max-width:620px; margin-bottom:52px; }
+  .section-head .kicker{
+    font-family:'JetBrains Mono'; font-size:12px; color:var(--magenta);
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px; display:block;
+  }
+  .section-head h2{ font-size:34px; font-weight:700; }
+  .section-head p{ margin-top:14px; color:var(--muted); font-size:15.5px; }
+
+  /* ---------- feature grid (the 17 tabs) ---------- */
+  .features{ padding:120px 0 100px; }
+  .feature-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:1px;
+    background:var(--border); border:1px solid var(--border); border-radius:12px; overflow:hidden;
+  }
+  .feature{
+    background:var(--panel); padding:26px 24px; min-height:150px;
+    transition:background 0.2s;
+  }
+  .feature:hover{ background:#160D26; }
+  .feature .num{
+    font-family:'JetBrains Mono'; font-size:12px; color:var(--dim); margin-bottom:14px; display:block;
+  }
+  .feature h3{ font-size:16px; font-weight:600; margin-bottom:8px; }
+  .feature p{ font-size:13.5px; color:var(--muted); margin:0; }
+
+  /* ---------- new-features spotlight ---------- */
+  .spotlight{ padding:20px 0 120px; }
+  .spot-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .spot-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:28px;
+    position:relative; overflow:hidden;
+  }
+  .spot-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--grad);
+  }
+  .spot-icon{
+    width:38px; height:38px; border-radius:9px; margin-bottom:20px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--chip); border:1px solid var(--border-soft);
+  }
+  .spot-card h3{ font-size:16.5px; font-weight:600; margin-bottom:10px; }
+  .spot-card p{ font-size:13.5px; color:var(--muted); margin:0; }
+  .badge-new{
+    display:inline-block; font-family:'JetBrains Mono'; font-size:10.5px; color:var(--void);
+    background:var(--cyan); padding:2px 8px; border-radius:10px; font-weight:600; margin-bottom:14px;
+    letter-spacing:0.04em;
+  }
+
+  /* ---------- how it works ---------- */
+  .how{ padding:20px 0 130px; }
+  .how-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; position:relative; }
+  .how-grid::before{
+    content:''; position:absolute; top:23px; left:8%; right:8%; height:1px;
+    background:linear-gradient(90deg, transparent, var(--border-soft), transparent);
+  }
+  .how-step{ padding:0 24px; position:relative; }
+  .how-step:first-child{ padding-left:0; }
+  .how-step:last-child{ padding-right:0; }
+  .how-num{
+    width:46px; height:46px; border-radius:50%; background:var(--panel);
+    border:1px solid var(--border-soft); display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:700; font-size:16px; margin-bottom:22px;
+    position:relative; z-index:1;
+  }
+  .how-step h3{ font-size:17px; font-weight:600; margin-bottom:10px; }
+  .how-step p{ font-size:14px; color:var(--muted); }
+  .how-step code{
+    display:inline-block; margin-top:10px; font-family:'JetBrains Mono'; font-size:12px;
+    background:var(--chip); border:1px solid var(--border-soft); padding:6px 10px; border-radius:5px; color:var(--cyan);
+  }
+
+  /* ---------- faq ---------- */
+  .faq{ padding:20px 0 130px; }
+  .faq-list{ max-width:760px; }
+  .faq-item{
+    border-bottom:1px solid var(--border);
+  }
+  .faq-q{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    padding:22px 0; display:flex; justify-content:space-between; align-items:center; gap:20px;
+    color:var(--text); font-family:'Space Grotesk'; font-size:16px; font-weight:600;
+  }
+  .faq-q .plus{
+    font-family:'JetBrains Mono'; font-size:18px; color:var(--dim); transition:transform 0.2s; flex-shrink:0;
+  }
+  .faq-item[data-open="true"] .plus{ transform:rotate(45deg); color:var(--cyan); }
+  .faq-a{
+    max-height:0; overflow:hidden; transition:max-height 0.25s ease;
+    font-size:14.5px; color:var(--muted);
+  }
+  .faq-a inner{ display:block; padding-bottom:22px; }
+  .faq-item[data-open="true"] .faq-a{ max-height:220px; }
+  .faq-a-inner{ padding-bottom:22px; padding-right:60px; }
+
+  /* ---------- support / donate ---------- */
+  .support{ padding:20px 0 130px; }
+  .support-card{
+    display:flex; align-items:center; justify-content:space-between; gap:40px;
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:40px 44px; flex-wrap:wrap;
+  }
+  .support-copy{ max-width:520px; }
+  .support-copy h2{ font-size:26px; font-weight:700; margin-bottom:12px; }
+  .support-copy p{ color:var(--muted); font-size:14.5px; margin:0; }
+  .support-copy .dev-line{
+    margin-top:14px; font-family:'JetBrains Mono'; font-size:12px; color:var(--dim);
+  }
+  .support-copy .dev-line b{ color:var(--muted); font-weight:500; }
+  .paypal-form{ margin:0; flex-shrink:0; }
+  .btn-paypal{
+    display:inline-flex; align-items:center; gap:10px;
+    background:#FFC439; color:#0B0714; border:none;
+    padding:14px 26px; border-radius:8px; font-size:14.5px; font-weight:700;
+    font-family:'Inter', sans-serif; cursor:pointer;
+    transition:transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-paypal:hover{ transform:translateY(-1px); box-shadow:0 10px 26px rgba(255,196,57,0.25); }
+  .btn-paypal svg{ flex-shrink:0; }
+
+  /* ---------- final cta ---------- */
+  .cta-band{
+    margin:0 28px 100px; max-width:1124px; margin-left:auto; margin-right:auto;
+    border-radius:16px; padding:64px 48px; text-align:center;
+    background:linear-gradient(160deg, #150A26, #0B0714 70%);
+    border:1px solid var(--border-soft);
+    position:relative; overflow:hidden;
+  }
+  .cta-band h2{ font-size:32px; font-weight:700; }
+  .cta-band p{ color:var(--muted); margin-top:14px; max-width:460px; margin-left:auto; margin-right:auto; }
+  .cta-band .hero-actions{ justify-content:center; margin-top:30px; }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--border); padding:44px 0 36px; }
+  .foot-grid{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:24px; }
+  .foot-brand p{ color:var(--dim); font-size:13px; margin-top:10px; max-width:280px; }
+  .foot-links{ display:flex; gap:48px; flex-wrap:wrap; }
+  .foot-col h4{ font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; font-family:'JetBrains Mono'; font-weight:500;}
+  .foot-col a{ display:block; color:var(--muted); font-size:13.5px; text-decoration:none; margin-bottom:10px; }
+  .foot-col a:hover{ color:var(--text); }
+  .foot-bottom{
+    margin-top:40px; padding-top:24px; border-top:1px solid var(--border);
+    display:flex; justify-content:space-between; color:var(--dim); font-size:12.5px; flex-wrap:wrap; gap:10px;
+    font-family:'JetBrains Mono';
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:940px){
+    nav.links{ display:none; }
+    .menu-btn{ display:inline-flex; }
+    .hero-grid{ grid-template-columns:1fr; gap:48px; }
+    .hero h1{ font-size:38px; }
+    .feature-grid{ grid-template-columns:repeat(2,1fr); }
+    .spot-grid{ grid-template-columns:1fr; }
+    .how-grid{ grid-template-columns:1fr; gap:36px; }
+    .how-grid::before{ display:none; }
+    .how-step{ padding:0; }
+    .statbar .wrap{ grid-template-columns:repeat(2,1fr); gap:20px; }
+  }
+  @media (max-width:560px){
+    .hero{ padding:56px 0 64px; }
+    .hero h1{ font-size:30px; }
+    .feature-grid{ grid-template-columns:1fr; }
+    .terminal-body{ height:280px; }
+    .cta-band{ padding:44px 24px; margin:0 16px 70px; }
+    .cta-band h2{ font-size:26px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="navbar">
+    <a href="#" class="brand">
+      <img src="/logo.png" alt="Workztream" class="brand-mark">
+      <span class="brand-word">WORKZTREAM</span>
+    </a>
+    <nav class="links">
+      <a href="#features">Toolkit</a>
+      <a href="#new">What's new</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a href="#support">Donate</a>
+    </nav>
+    <a class="nav-cta" href="#download">
+      Download
+    </a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="node-field">
+    <svg class="f1" viewBox="0 0 220 220" fill="none"><g opacity="0.7"><circle cx="110" cy="16" r="4" fill="#59C7FF"/><circle cx="176" cy="45" r="4" fill="#D96BD0"/><circle cx="204" cy="110" r="4" fill="#59C7FF"/><circle cx="176" cy="176" r="4" fill="#D96BD0"/><circle cx="110" cy="204" r="4" fill="#59C7FF"/><circle cx="45" cy="176" r="4" fill="#D96BD0"/><circle cx="16" cy="110" r="4" fill="#59C7FF"/><circle cx="45" cy="45" r="4" fill="#D96BD0"/><g stroke="#8B7CF6" stroke-width="1" opacity="0.4"><line x1="110" y1="16" x2="176" y2="45"/><line x1="176" y1="45" x2="204" y2="110"/><line x1="204" y1="110" x2="176" y2="176"/><line x1="176" y1="176" x2="110" y2="204"/><line x1="110" y1="204" x2="45" y2="176"/><line x1="45" y1="176" x2="16" y2="110"/><line x1="16" y1="110" x2="45" y2="45"/><line x1="45" y1="45" x2="110" y2="16"/></g></g></svg>
+    <svg class="f2" viewBox="0 0 220 220" fill="none"><g opacity="0.6"><circle cx="110" cy="16" r="3.5" fill="#8B7CF6"/><circle cx="176" cy="45" r="3.5" fill="#59C7FF"/><circle cx="204" cy="110" r="3.5" fill="#D96BD0"/><circle cx="176" cy="176" r="3.5" fill="#8B7CF6"/><circle cx="110" cy="204" r="3.5" fill="#59C7FF"/><circle cx="45" cy="176" r="3.5" fill="#D96BD0"/><circle cx="16" cy="110" r="3.5" fill="#8B7CF6"/><circle cx="45" cy="45" r="3.5" fill="#59C7FF"/><g stroke="#59C7FF" stroke-width="1" opacity="0.3"><line x1="110" y1="16" x2="204" y2="110"/><line x1="204" y1="110" x2="110" y2="204"/><line x1="110" y1="204" x2="16" y2="110"/><line x1="16" y1="110" x2="110" y2="16"/></g></g></svg>
+  </div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Actively developed &middot; new tools shipped regularly</span>
+      <h1>
+        <span class="line">Seventeen tools</span>
+        <span class="line grad-text">(and counting).</span>
+      </h1>
+      <p class="lede">Workztream wraps SFC, DISM, Chkdsk, network resets, and the rest of Windows' own repair utilities in one clean admin-grade GUI &mdash; so you stop hunting through menus and start fixing. It didn't launch with all of this, and it won't stop here either: every tab exists because a real maintenance problem needed one.</p>
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary">Download for Windows</a>
+        <a href="#features" class="btn btn-ghost">See the toolkit</a>
+      </div>
+      <div class="hero-fineprint">
+        <span>Free, always</span>
+        <span>No ads in-app</span>
+        <span>No telemetry</span>
+        <span>Windows 10 / 11</span>
+      </div>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <span class="terminal-title">ACTIVITY LOG</span>
+      </div>
+      <div class="terminal-body" id="termBody"></div>
+    </div>
+  </div>
+</section>
+
+<div class="statbar">
+  <div class="wrap">
+    <div class="stat"><b>17</b><span>Task tabs, growing</span></div>
+    <div class="stat"><b>80+</b><span>Repair &amp; cleanup actions</span></div>
+    <div class="stat"><b>0</b><span>Background processes</span></div>
+    <div class="stat"><b>$0</b><span>Cost, no upgrades</span></div>
+  </div>
+</div>
+
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">The toolkit</span>
+      <h2>Every tab, in the order a technician actually works.</h2>
+      <p>Workztream follows one routine: secure the system, clean it, repair it, then confirm it's healthy. Each tab picks up exactly where the last one left off &mdash; and this list has grown every month since the first release, not a fixed set decided on day one.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature"><span class="num">01</span><h3>Prep &amp; Safety</h3><p>Restore point, software inventory, health score, and a one-click list of what's actually wrong.</p></div>
+      <div class="feature"><span class="num">02</span><h3>Core Cleanup</h3><p>SFC scan, Temp folders, Disk Cleanup, Storage Sense, drive optimization, Store cache reset - all quarantined, not deleted outright.</p></div>
+      <div class="feature"><span class="num">03</span><h3>System Repair</h3><p>DISM RestoreHealth, component store trim, forced Group Policy update.</p></div>
+      <div class="feature"><span class="num">04</span><h3>Diagnostics &amp; Health</h3><p>Battery report, Chkdsk (read-only or fix-at-restart), memory diagnostic, SMART status.</p></div>
+      <div class="feature"><span class="num">05</span><h3>Network</h3><p>DNS/IP/ARP refresh, deeper Winsock resets, saved Wi-Fi password recovery, a speed test, and a scan of what's on your local network.</p></div>
+      <div class="feature"><span class="num">06</span><h3>Updates &amp; Apps</h3><p>Windows Update, per-service restarts, winget upgrades, vendor download links.</p></div>
+      <div class="feature"><span class="num">07</span><h3>Browser &amp; Startup</h3><p>Per-browser cache clearing and one click into Startup Apps.</p></div>
+      <div class="feature"><span class="num">08</span><h3>Control Panel Applets</h3><p>Direct shortcuts to the classic admin consoles you reach for every day.</p></div>
+      <div class="feature"><span class="num">09</span><h3>RegEdit Processes</h3><p>USB storage toggle, NTFS long-path support &mdash; guarded behind a confirmation.</p></div>
+      <div class="feature"><span class="num">10</span><h3>Laptop Drivers</h3><p>Vendor download links, plus a live scan of installed driver versions flagging anything stale.</p></div>
+      <div class="feature"><span class="num">11</span><h3>Virus &amp; Malware Scan</h3><p>Kick off a Defender quick, full, or offline scan without opening Settings.</p></div>
+      <div class="feature"><span class="num">12</span><h3>BitLocker Key</h3><p>Surface the recovery password for the system drive when you need it fast.</p></div>
+      <div class="feature"><span class="num">13</span><h3>Software Manager</h3><p>Bulk-uninstall installed programs straight from the Uninstall registry keys - no more one-by-one.</p></div>
+      <div class="feature"><span class="num">14</span><h3>Startup Manager</h3><p>See and toggle what launches at sign-in, without leaving the tab.</p></div>
+      <div class="feature"><span class="num">15</span><h3>History</h3><p>A local, private trend log of disk, RAM, and CPU every time you export a report, plus a shortcut into Event Viewer.</p></div>
+      <div class="feature"><span class="num">16</span><h3>Remote Machines</h3><p>Run the same health checks and quick fixes against other machines on your network over PowerShell Remoting.</p></div>
+      <div class="feature"><span class="num">17</span><h3>Debloating</h3><p>Remove curated, risk-tagged bloatware, and flip reversible privacy/telemetry toggles.</p></div>
+    </div>
+    <p style="margin-top:28px; color:var(--dim); font-size:13px; font-family:'JetBrains Mono';">This list keeps growing &mdash; <a href="https://github.com/YOUR-USERNAME/workztream/releases" style="color:var(--cyan);">check the release notes</a> for what's shipped since you last looked.</p>
+  </div>
+</section>
+
+<section class="spotlight" id="new">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">What's new</span>
+      <h2>Grown well past a basic repair tool.</h2>
+      <p>Three additions that turn Workztream from a fix-it kit into something you'd actually trust with the messier parts of the job.</p>
+    </div>
+    <div class="spot-grid">
+      <div class="spot-card">
+        <span class="badge-new">NEW</span>
+        <div class="spot-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#59C7FF" stroke-width="2"><path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h3>A Health Score, not a vague verdict</h3>
+        <p>A 0&ndash;100 score built from disk space, memory pressure, restore-point age, startup load, and Defender status &mdash; deterministic rules you can see, not an unexplained "AI" opinion. Click any flagged issue to jump straight to the tab that fixes it.</p>
+      </div>
+      <div class="spot-card">
+        <span class="badge-new">NEW</span>
+        <div class="spot-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B7CF6" stroke-width="2"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+        </div>
+        <h3>Cleanup you can undo</h3>
+        <p>Temp file cleanup moves files to quarantine instead of deleting them outright. Restore a batch, or let it auto-purge after 7 days &mdash; a bad cleanup is never permanent by accident.</p>
+      </div>
+      <div class="spot-card">
+        <span class="badge-new">NEW</span>
+        <div class="spot-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D96BD0" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6h12z"/></svg>
+        </div>
+        <h3>Debloating, without the guesswork</h3>
+        <p>A curated list of commonly-unwanted pre-installed apps, each tagged Safe or Caution with a real explanation &mdash; not a blanket "select all" list. Paired with fully reversible privacy and telemetry toggles.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">How it works</span>
+      <h2>Three steps, start to finish.</h2>
+    </div>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <h3>Download the installer</h3>
+        <p>Grab WorkztreamSetup.exe &mdash; no signup, just a standard Windows installer.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <h3>Install and launch</h3>
+        <p>Run the installer and open Workztream. It prompts for the Administrator (UAC) elevation it needs on first launch.</p>
+        <code>WorkztreamSetup.exe &rarr; Install &rarr; Launch</code>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <h3>Pick a tab, or run the sequence</h3>
+        <p>Work through a tab by hand, or hit "Run Recommended Sequence" for the safe, automatable core routine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="support" id="support">
+  <div class="wrap">
+    <div class="support-card">
+      <div class="support-copy">
+        <h2>Built solo. Kept free.</h2>
+        <p>Workztream doesn't run ads, sell data, or gate features behind a paywall. If it's saved you a service call or an afternoon of hunting through menus, a donation goes directly toward keeping it that way.</p>
+        <div class="dev-line"><b>Developer:</b> Mark Anthony Generosa &middot; Qudex Software Development Services</div>
+      </div>
+      <form action="https://www.paypal.com/donate" method="post" target="_blank" class="paypal-form">
+        <!-- PayPal Business account: Qudex Software Development Services -->
+        <input type="hidden" name="business" value="markrabelgen@gmail.com">
+        <input type="hidden" name="no_recurring" value="0">
+        <input type="hidden" name="item_name" value="Support Workztream development">
+        <input type="hidden" name="currency_code" value="USD">
+        <button type="submit" class="btn-paypal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7.5 20.5H4.8c-.4 0-.7-.3-.6-.7L6.6 4.6c.1-.5.5-.8 1-.8h5.9c2.8 0 4.6 1.5 4.2 4.1-.4 3-2.7 4.6-5.7 4.6H9.3l-.6 3.9c-.1.6-.5 1-1.1 1z" fill="#0B0714"/><path d="M18.4 8.8c-.4 3-2.7 4.6-5.7 4.6h-2.6l-.9 5.6c-.1.4.2.7.6.7h2.4c.5 0 .9-.4 1-.9l.7-4.2h1.6c2.6 0 4.6-1.4 5.1-4.2.3-1.5-.1-2.7-1.2-3.5.1.6.1 1.3 0 1.9z" fill="#0B0714" fill-opacity="0.6"/></svg>
+          Donate with PayPal
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">FAQ</span>
+      <h2>Before you run it</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item" data-open="true">
+        <button class="faq-q">Is Workztream actually free? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes, entirely. There's no paid tier, no locked tabs, and nothing to unlock. It's a PowerShell script you own a copy of once you download it.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Does it collect any data or telemetry? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">No passive collection and no background processes once the window is closed. Two features do talk to the network, but only when you click them: the speed test hits Cloudflare's public test endpoint, and Remote Machines connects only to hostnames or IPs you type in yourself. Everything else runs entirely against your own machine's built-in Windows tools.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Why does it need Administrator rights? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Most of the tabs &mdash; SFC, DISM, Chkdsk, network stack resets, registry changes &mdash; require elevation on Windows regardless of the tool running them. Workztream prompts for the UAC dialog automatically on launch.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Will it change settings I didn't ask for? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">No action runs without you clicking its button, and destructive or system-altering steps (like registry edits or the full recommended sequence) ask for confirmation first. "Run Recommended Sequence" deliberately excludes anything that needs a restart or carries risk &mdash; those stay manual.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I undo a bloatware removal if I change my mind? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Not the way Temp cleanup's quarantine works &mdash; app removal isn't file-based, so there's nothing to restore from a folder. Reinstalling later means grabbing it again from the Microsoft Store. That's why every app is tagged Safe or Caution rather than dumped into one list, and why we recommend a System Restore Point first if you haven't made one recently.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Windows says "Windows protected your PC" when I run the installer &mdash; is that normal? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes, for now. SmartScreen flags any installer from a publisher it doesn't yet recognize, regardless of what the installer actually does. Click <b>More info</b> &rarr; <b>Run anyway</b> to proceed. This warning goes away automatically once the installer has enough downloads and reputation with Microsoft, or immediately if it's signed with a code-signing certificate.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Windows 10 or 11 &mdash; does it matter? <span class="plus">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Workztream targets Windows 10 and 11 and relies on the utilities Microsoft ships with both. PowerShell 5.1 or later is required, which is already installed on any supported Windows machine.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band" id="download">
+  <h2>Stop context-switching between six admin tools.</h2>
+  <p>Download Workztream and get the whole routine &mdash; prep, cleanup, repair, diagnostics &mdash; in one window.</p>
+  <div class="hero-actions">
+    <!-- Update this href once WorkztreamSetup.exe is uploaded as a GitHub Release asset,
+         e.g. https://github.com/YOUR-USERNAME/workztream/releases/latest/download/WorkztreamSetup.exe
+         The /latest/download/ path always serves the newest release automatically -
+         no need to update this link again on future versions if the filename stays the same. -->
+    <a href="https://github.com/YOUR-USERNAME/workztream/releases/latest/download/WorkztreamSetup.exe" class="btn btn-primary" id="ctaDownloadBtn" download>Download for Windows</a>
+    <a href="#features" class="btn btn-ghost">See what's included</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#" class="brand"><img src="/logo.png" alt="Workztream" class="brand-mark"><span class="brand-word">WORKZTREAM</span></a>
+        <p>A technician-grade Windows maintenance toolkit. No ads in the app, no telemetry, no nonsense.</p>
+      </div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h4>Product</h4>
+          <a href="#features">Toolkit</a>
+          <a href="#new">What's new</a>
+          <a href="#how">How it works</a>
+        </div>
+        <div class="foot-col">
+          <h4>Resources</h4>
+          <a href="#faq">FAQ</a>
+          <a href="https://github.com/YOUR-USERNAME/workztream">Documentation</a>
+          <a href="https://github.com/YOUR-USERNAME/workztream/releases">Release notes</a>
+        </div>
+        <div class="foot-col">
+          <h4>Get it</h4>
+          <a href="#download">Download</a>
+          <a href="https://github.com/YOUR-USERNAME/workztream">GitHub</a>
+        </div>
+        <div class="foot-col">
+          <h4>Support</h4>
+          <a href="#support">Donate</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>&copy; <span id="yr"></span> Workztream</span>
+      <span>workztream.com</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile-safe year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var q = item.querySelector('.faq-q');
+    q.addEventListener('click', function(){
+      var isOpen = item.getAttribute('data-open') === 'true';
+      document.querySelectorAll('.faq-item').forEach(function(i){ i.setAttribute('data-open','false'); });
+      item.setAttribute('data-open', isOpen ? 'false' : 'true');
+    });
+  });
+
+  // Terminal typing loop, mirrors the app's own Write-Log format
+  var lines = [
+    ['00:00:04','INFO','Starting: SFC Scan ...','tag-info'],
+    ['00:00:41','OK','SFC Scan finished.','tag-ok'],
+    ['00:00:41','INFO','Cleaning %Temp%, Prefetch, and Recent Items ...','tag-info'],
+    ['00:00:44','OK','Temp / Prefetch / Recent cleanup complete.','tag-ok'],
+    ['00:00:45','OK','DNS cache flushed.','tag-ok'],
+    ['00:00:46','INFO','Checking drive SMART / health status ...','tag-info'],
+    ['00:00:47','OK','Disk 0: NVMe SSD - Health: Healthy, Status: OK','tag-ok'],
+    ['00:00:48','OK','Windows Update services restarted.','tag-ok'],
+    ['00:00:49','WARN','Chkdsk Read-Only Scan starting ...','tag-warn'],
+    ['00:01:20','OK','Chkdsk Read-Only Scan finished.','tag-ok'],
+    ['00:01:21','OK','Recommended sequence complete.','tag-ok']
+  ];
+  var body = document.getElementById('termBody');
+  var idx = 0;
+
+  function typeLoop(){
+    body.innerHTML = '';
+    idx = 0;
+    step();
+  }
+  function step(){
+    if (idx >= lines.length){
+      setTimeout(typeLoop, 2200);
+      return;
+    }
+    var l = lines[idx];
+    var div = document.createElement('div');
+    div.className = 'terminal-line';
+    var tagText = l[1] === 'OK' ? '[ OK ]' : (l[1] === 'WARN' ? '[WARN]' : '[INFO]');
+    div.innerHTML = '<span class="ts">' + l[0] + '</span>  <span class="' + l[3] + '">' + tagText + '</span>  ' + l[2];
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+    idx++;
+    setTimeout(step, 420);
+  }
+  typeLoop();
+
+  // trailing cursor
+  var cursorHolder = document.createElement('span');
+  cursorHolder.className = 'cursor';
+</script>
+
+</body>
+</html>
