@@ -5,6 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workztream — Technician-grade Windows maintenance, one clean toolkit</title>
 <meta name="description" content="Workztream consolidates SFC, DISM, Chkdsk, network resets, bloatware removal, and more of Windows' own repair tools into one clean, admin-grade GUI. Free. No ads. No telemetry.">
+<link rel="canonical" href="https://workztream.com/">
+
+<!-- Open Graph (Facebook, LinkedIn, Discord, etc.) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://workztream.com/">
+<meta property="og:title" content="Workztream — Technician-grade Windows maintenance, one clean toolkit">
+<meta property="og:description" content="17 tabs of Windows repair, cleanup, debloating, and remote fleet health in one admin-grade GUI. Free, no ads, no telemetry, no paid tier.">
+<meta property="og:image" content="https://workztream.com/android-chrome-512x512.png">
+<meta property="og:site_name" content="Workztream">
+
+<!-- Twitter/X Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Workztream — Technician-grade Windows maintenance, one clean toolkit">
+<meta name="twitter:description" content="17 tabs of Windows repair, cleanup, debloating, and remote fleet health in one admin-grade GUI. Free, no ads, no telemetry, no paid tier.">
+<meta name="twitter:image" content="https://workztream.com/android-chrome-512x512.png">
+
+<!-- Structured data for search engines -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Workztream",
+  "operatingSystem": "Windows 10, Windows 11",
+  "applicationCategory": "SystemUtility",
+  "url": "https://workztream.com/",
+  "description": "A free, technician-grade Windows maintenance toolkit consolidating SFC, DISM, Chkdsk, network resets, bloatware removal, and more built-in repair tools into one admin-grade GUI. No ads, no telemetry, no paid tier.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -302,10 +336,19 @@
     margin-top:14px; font-family:'JetBrains Mono'; font-size:12px; color:var(--dim);
   }
   .support-copy .dev-line b{ color:var(--muted); font-weight:500; }
-  .paypal-form{ margin:0; flex-shrink:0; }
+  .paypal-form{ margin:0; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+  .paypal-amounts{ display:flex; gap:8px; }
+  .btn-amount{
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--chip); border:1px solid var(--border-soft); color:var(--muted);
+    width:52px; height:34px; border-radius:6px; font-size:13px; font-weight:600;
+    font-family:'Inter', sans-serif; text-decoration:none; cursor:pointer;
+    transition:border-color 0.15s, color 0.15s;
+  }
+  .btn-amount:hover{ border-color:var(--cyan); color:var(--text); }
   .btn-paypal{
     display:inline-flex; align-items:center; gap:10px;
-    background:#FFC439; color:#0B0714; border:none;
+    background:#FFC439; color:#0B0714; border:none; text-decoration:none;
     padding:14px 26px; border-radius:8px; font-size:14.5px; font-weight:700;
     font-family:'Inter', sans-serif; cursor:pointer;
     transition:transform 0.15s, box-shadow 0.15s;
@@ -359,6 +402,9 @@
     .terminal-body{ height:280px; }
     .cta-band{ padding:44px 24px; margin:0 16px 70px; }
     .cta-band h2{ font-size:26px; }
+    .support-card{ padding:32px 24px; }
+    .paypal-form{ align-items:center; width:100%; }
+    .paypal-amounts{ width:100%; justify-content:center; }
   }
 </style>
 </head>
@@ -524,20 +570,20 @@
     <div class="support-card">
       <div class="support-copy">
         <h2>Built solo. Kept free.</h2>
-        <p>Workztream doesn't run ads, sell data, or gate features behind a paywall. If it's saved you a service call or an afternoon of hunting through menus, a donation goes directly toward keeping it that way.</p>
+        <p>Workztream doesn't run ads, sell data, or gate features behind a paywall. If it's saved you a service call or an afternoon of hunting through menus, a donation goes directly toward keeping it that way &mdash; entirely optional, any amount welcome.</p>
         <div class="dev-line"><b>Developer:</b> Mark Anthony Generosa &middot; Qudex Software Development Services</div>
       </div>
-      <form action="https://www.paypal.com/donate" method="post" target="_blank" class="paypal-form">
-        <!-- PayPal Business account: Qudex Software Development Services -->
-        <input type="hidden" name="business" value="markrabelgen@gmail.com">
-        <input type="hidden" name="no_recurring" value="0">
-        <input type="hidden" name="item_name" value="Support Workztream development">
-        <input type="hidden" name="currency_code" value="USD">
-        <button type="submit" class="btn-paypal">
+      <div class="paypal-form">
+        <div class="paypal-amounts">
+          <a href="https://paypal.me/MarkGen27/5" target="_blank" rel="noopener" class="btn-amount">$5</a>
+          <a href="https://paypal.me/MarkGen27/10" target="_blank" rel="noopener" class="btn-amount">$10</a>
+          <a href="https://paypal.me/MarkGen27/20" target="_blank" rel="noopener" class="btn-amount">$20</a>
+        </div>
+        <a href="https://paypal.me/MarkGen27" target="_blank" rel="noopener" class="btn-paypal">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7.5 20.5H4.8c-.4 0-.7-.3-.6-.7L6.6 4.6c.1-.5.5-.8 1-.8h5.9c2.8 0 4.6 1.5 4.2 4.1-.4 3-2.7 4.6-5.7 4.6H9.3l-.6 3.9c-.1.6-.5 1-1.1 1z" fill="#0B0714"/><path d="M18.4 8.8c-.4 3-2.7 4.6-5.7 4.6h-2.6l-.9 5.6c-.1.4.2.7.6.7h2.4c.5 0 .9-.4 1-.9l.7-4.2h1.6c2.6 0 4.6-1.4 5.1-4.2.3-1.5-.1-2.7-1.2-3.5.1.6.1 1.3 0 1.9z" fill="#0B0714" fill-opacity="0.6"/></svg>
           Donate with PayPal
-        </button>
-      </form>
+        </a>
+      </div>
     </div>
   </div>
 </section>
