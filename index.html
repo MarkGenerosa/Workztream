@@ -346,6 +346,9 @@
     transition:border-color 0.15s, color 0.15s;
   }
   .btn-amount:hover{ border-color:var(--cyan); color:var(--text); }
+  .btn-amount.selected{
+    background:var(--grad); border-color:transparent; color:#0B0714; font-weight:700;
+  }
   .btn-paypal{
     display:inline-flex; align-items:center; gap:10px;
     background:#FFC439; color:#0B0714; border:none; text-decoration:none;
@@ -574,14 +577,14 @@
         <div class="dev-line"><b>Developer:</b> Mark Anthony Generosa &middot; Qudex Software Development Services</div>
       </div>
       <div class="paypal-form">
-        <div class="paypal-amounts">
-          <a href="https://paypal.me/MarkGen27/5" target="_blank" rel="noopener" class="btn-amount">$5</a>
-          <a href="https://paypal.me/MarkGen27/10" target="_blank" rel="noopener" class="btn-amount">$10</a>
-          <a href="https://paypal.me/MarkGen27/20" target="_blank" rel="noopener" class="btn-amount">$20</a>
+        <div class="paypal-amounts" id="paypalAmounts">
+          <button type="button" class="btn-amount" data-amount="5">$5</button>
+          <button type="button" class="btn-amount" data-amount="10">$10</button>
+          <button type="button" class="btn-amount" data-amount="20">$20</button>
         </div>
-        <a href="https://paypal.me/MarkGen27" target="_blank" rel="noopener" class="btn-paypal">
+        <a href="https://paypal.me/MarkGen27" target="_blank" rel="noopener" class="btn-paypal" id="paypalMainBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7.5 20.5H4.8c-.4 0-.7-.3-.6-.7L6.6 4.6c.1-.5.5-.8 1-.8h5.9c2.8 0 4.6 1.5 4.2 4.1-.4 3-2.7 4.6-5.7 4.6H9.3l-.6 3.9c-.1.6-.5 1-1.1 1z" fill="#0B0714"/><path d="M18.4 8.8c-.4 3-2.7 4.6-5.7 4.6h-2.6l-.9 5.6c-.1.4.2.7.6.7h2.4c.5 0 .9-.4 1-.9l.7-4.2h1.6c2.6 0 4.6-1.4 5.1-4.2.3-1.5-.1-2.7-1.2-3.5.1.6.1 1.3 0 1.9z" fill="#0B0714" fill-opacity="0.6"/></svg>
-          Donate with PayPal
+          <span id="paypalBtnLabel">Donate with PayPal</span>
         </a>
       </div>
     </div>
@@ -691,6 +694,32 @@
       item.setAttribute('data-open', isOpen ? 'false' : 'true');
     });
   });
+
+  // PayPal amount selector - pick an amount, then the main button carries it through.
+  // Clicking a pill a second time deselects it, falling back to a blank/custom amount on PayPal's own page.
+  (function(){
+    var pills = document.querySelectorAll('#paypalAmounts .btn-amount');
+    var mainBtn = document.getElementById('paypalMainBtn');
+    var mainLabel = document.getElementById('paypalBtnLabel');
+    var baseUrl = 'https://paypal.me/MarkGen27';
+
+    pills.forEach(function(pill){
+      pill.addEventListener('click', function(){
+        var alreadySelected = pill.classList.contains('selected');
+        pills.forEach(function(p){ p.classList.remove('selected'); });
+
+        if (alreadySelected) {
+          mainBtn.href = baseUrl;
+          mainLabel.textContent = 'Donate with PayPal';
+        } else {
+          pill.classList.add('selected');
+          var amount = pill.getAttribute('data-amount');
+          mainBtn.href = baseUrl + '/' + amount + 'USD';
+          mainLabel.textContent = 'Donate $' + amount + ' with PayPal';
+        }
+      });
+    });
+  })();
 
   // Terminal typing loop, mirrors the app's own Write-Log format
   var lines = [
